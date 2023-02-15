@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+</head>
+
+<body>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="exampleFormControlTextarea1">User Input:</label>
+      <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="text"></textarea>
+      <input type="hidden" id="h1_value" name="h1_value" value="">
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+  <div style="position: absolute;right: 20px;">
+    <a class="btn btn-dark btn-lg" href="{% url 'updater' %}" role="button">updater</a>
+  </div>
+  <hr>
+  <div> 
+    <h1>{{ answer }}</h1>
+  </div>
+  <hr>
+  <div>
+    {% for an in ans %}
+    <h1>Name: {{ an.first }} {{ an.last }}</h1>
+    <h2>Birthplace: {{ an.birthplace }}</h2>
+    <h2>SSN No.: {{ an.ssn }}</h2>
+    <h2>UUID No.: {{ an.uuid }}</h2>
+    <h3>Birthdate: {{ an.birthdate }}</h3>
+    {% endfor %}
+  </div>
+  <h6 style="display: none;">{{ ans.0.uuid }}</h6>
+  <script>
+    document.querySelector("#h1_value").value = document.querySelector("h6").innerText;
+
+  </script>
+
+</body>
+
+</html>

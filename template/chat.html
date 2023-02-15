@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+    <body>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="exampleFormControlTextarea1">User Input:</label>
+              <textarea class="form-control" id="input" rows="3" name="text"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+        <div style="position: absolute;right: 20px;">
+            <a class="btn btn-dark btn-lg" href="{% url 'index' %}" role="button">Restart</a>
+        </div>
+        <hr>
+        <h1>{{ reply }}</h1>
+        <h1>{{ p }}</h1>
+        {% for i in find %}
+        <h2> -> {% if i.date %}On {{ i.date.date }}{% endif %} 
+            {% if i.start.date %}from {{ i.start.date }}{% elif i.start %}from {{ i.start }}{% endif %} 
+            {% if i.stop.date %}to {{ i.stop.date }}{% elif i.stop %}to {{ i.stop }}{% endif %} 
+            {% if i.description %} {{ i.description }}{% endif %}
+            {% if i.code %}code {{ i.code }} {% endif %}
+            {% if i.body_site_code %}for {{ i.body_site_description }} code {{ i.body_site_code }}{% endif %}
+            {% if i.reason_code %}for {{ i.reason_description }} code {{ i.reason_code }}{% endif %} 
+            {% if i.modality_code %}Modality {{ i.modality_description }} code {{ i.modality_code }}{% endif %}  
+            {% if i.sop_code %}Sop {{ i.sop_description }} code {{ i.sop_code }}{% endif %}
+            {% if i.value %}Result {{ i.value }} {{ i.units }}{% endif %} 
+            
+        </h2>
+        <br>
+        {% endfor %}
+    </body>
+
+</html>

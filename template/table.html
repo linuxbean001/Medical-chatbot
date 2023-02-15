@@ -1,0 +1,55 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="exampleFormControlTextarea1">User Input:</label>
+            <textarea class="form-control" id="input" rows="3" name="text"></textarea>
+            <input type="hidden" id="h1_value" name="h1_value" value="">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    <div style="position: absolute;right: 20px;">
+        <a class="btn btn-dark btn-lg" href="{% url 'index' %}" role="button">Restart</a>
+    </div>
+    <h1>{{ reply }}</h1>
+    <h1>{{ heads }}</h1>
+    <table>
+        <thead>
+            <tr>
+                {% for header in headers %}
+                <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in find %}
+            <tr>
+                {% for field in headers %}
+                <td>d{{ item.header }}</td>
+                {% endfor %}
+    
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+ 
+    <h6 style="display: none;">{{ uuid }}</h6>
+    <script>
+        document.querySelector("#h1_value").value = document.querySelector("h6").innerText;
+    </script>
+</body>
+
+</html>
