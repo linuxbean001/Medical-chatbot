@@ -43,7 +43,7 @@ class chat:
 
     # Openai function to reply users question in first View
     def chatting(self,prompt):
-        openai.api_key = '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'
+        openai.api_key = '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'
 
 
         # model to generate the answer
@@ -67,7 +67,7 @@ class chat:
     
     # another Openai function to reply in patient_chat View
     def data_chatting(self,prompt):
-        openai.api_key = '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'
+        openai.api_key = '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'
         kpt = GPT(engine="davinci",
                 temperature=0.2,
                 max_tokens=100)
