@@ -43,7 +43,7 @@ class chat:
 
     # Openai function to reply users question in first View
     def chatting(self,prompt):
-        openai.api_key = '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'
+        openai.api_key = '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'
 
 
         # model to generate the answer
@@ -67,7 +67,7 @@ class chat:
     
     # another Openai function to reply in patient_chat View
     def data_chatting(self,prompt):
-        openai.api_key = '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'
+        openai.api_key = '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'
         kpt = GPT(engine="davinci",
                 temperature=0.2,
                 max_tokens=100)
@@ -75,8 +75,9 @@ class chat:
         kpt.add_example(Example("Tell me about the patients medications, data found","This is The Data avaliable about patients Medication"))
         kpt.add_example(Example("Tell me about the patients observation ,No data found","Sorry I don't have any data about patients Observations"))
         kpt.add_example(Example("Tell me about the patients observation, data found","There are Patient Observations"))
+        kpt.add_example(Example("any upcoming procedures, No data found","no there are not any upcoming procedures for the patient"))
         kpt.add_example(Example("other question","Please click on Restart if you want to ask questions about other patient or context"))
-
+        kpt.add_example(Example("othe question","Click on restart to chat about new patient"))
         p = kpt.submit_request(prompt)
     
         return p['choices'][0]['text'][8:]

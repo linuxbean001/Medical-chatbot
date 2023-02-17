@@ -1,45 +1,70 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Index</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
 </head>
 
-    <body>
-        
-        <form method="post">
-            {% csrf_token %}
-            <div class="form-group">
-              <label for="exampleFormControlTextarea1">User Input:</label>
-              <textarea class="form-control" id="input" rows="3" name="text"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-        <div style="position: absolute;right: 20px;">
-            <a class="btn btn-dark btn-lg" href="{% url 'index' %}" role="button">Restart</a>
+<body>
+    <div class="chat-window">
+        <div class="chat-header">
+            <span class="chat-title">Medical Chatbot</span>
         </div>
-        <hr>
-        <h1>{{ reply }}</h1>
-        <h1>{{ p }}</h1>
-        {% for i in find %}
-        <h2> -> {% if i.date %}On {{ i.date.date }}{% endif %} 
-            {% if i.start.date %}from {{ i.start.date }}{% elif i.start %}from {{ i.start }}{% endif %} 
-            {% if i.stop.date %}to {{ i.stop.date }}{% elif i.stop %}to {{ i.stop }}{% endif %} 
-            {% if i.description %} {{ i.description }}{% endif %}
-            {% if i.code %}code {{ i.code }} {% endif %}
-            {% if i.body_site_code %}for {{ i.body_site_description }} code {{ i.body_site_code }}{% endif %}
-            {% if i.reason_code %}for {{ i.reason_description }} code {{ i.reason_code }}{% endif %} 
-            {% if i.modality_code %}Modality {{ i.modality_description }} code {{ i.modality_code }}{% endif %}  
-            {% if i.sop_code %}Sop {{ i.sop_description }} code {{ i.sop_code }}{% endif %}
-            {% if i.value %}Result {{ i.value }} {{ i.units }}{% endif %} 
-            
-        </h2>
-        <br>
-        {% endfor %}
-    </body>
+
+        
+        <div class="chat-history">
+            {% for message in chat_history %}
+            <div class="chat-message user">
+                <div class="chat-message-content">
+                    <p>{{ message.user }}</p>
+                </div>
+            </div>
+            <div class="chat-message bot">
+                <div class="chat-message-content">
+                    <p>{{ message.bot }}</p>
+                    {% for i in message.find %}
+                    <p> > {% if i.date %}On {{ i.date.date }}{% endif %} 
+                        {% if i.start.date %}from {{ i.start.date }}{% elif i.start %}from {{ i.start }}{% endif %} 
+                        {% if i.stop.date %}to {{ i.stop.date }}{% elif i.stop %}to {{ i.stop }}{% endif %} 
+                        {% if i.description %} {{ i.description }},{% endif %}
+                        {% if i.code %}code {{ i.code }} {% endif %}
+                        {% if i.body_site_code %}for {{ i.body_site_description }}, code {{ i.body_site_code }}{% endif %}
+                        {% if i.reason_code %}for {{ i.reason_description }}, code {{ i.reason_code }}{% endif %} 
+                        {% if i.modality_code %}Modality {{ i.modality_description }}, code {{ i.modality_code }}{% endif %}  
+                        {% if i.sop_code %}Sop {{ i.sop_description }}, code {{ i.sop_code }}{% endif %}
+                        {% if i.value %}Result {{ i.value }} {{ i.units }}{% endif %} 
+                        
+                    </p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <form method="post" class="chat-input">
+            {% csrf_token %}
+            <input type="text" placeholder="Type your message here..." name="text">
+            <button>Send</button>
+        </form>
+    </div>
+    <div>
+        <a class="btn btn-primary btn-lg btn-block" href="{% url 'index' %}" role="button">Restart</a>
+    </div>
+    <h6 style="display: none;">{{ ans.0.uuid }}</h6>
+    <script>
+        function scrollToBottom() {
+            var chatHistory = document.querySelector('.chat-history');
+            chatHistory.scrollTop = chatHistory.scrollHeight - chatHistory.clientHeight;
+        }
+        window.addEventListener('load', scrollToBottom);
+    </script>
+</body>
 
 </html>

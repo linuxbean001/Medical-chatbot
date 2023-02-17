@@ -7,6 +7,7 @@ from django.db.models import Q
 from .tests import finders,chat
 from .updater import data_update
 from datetime import datetime,date
+from django.core.cache import cache
 
 # Create your views here.
 
@@ -32,8 +33,9 @@ def updater(request):
 class index(View):
     patt = ['\d{4}-\d\d-\d\d','\d{4}-\d-\d','\d{4}-\d-\d\d','\d{4}-\d\d-\d','\d{3}-\d\d-\d{4}','[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}',]
     def get(self,request):
+        cache.delete('chat_history')
         return render(request,'index.html')
-    def post(self,request):
+    def post(self, request):
         # prompt from user
         text = request.POST.get('text')
 
@@ -57,6 +59,10 @@ class index(View):
 
         # Creating reply for user by openai
         answer = chat.chatting(request,text)
+
+        # Retrieve chat history from cache
+        chat_history = cache.get('chat_history', [])
+
         if len(find)>1:
             answer = chat.chatting(request,f"{text}, more than one")
         elif len(find)==1:
@@ -66,11 +72,16 @@ class index(View):
                     if re.search(word,text):
                         answer = chat.chatting(request,f"{text}, no one found")
                         break
-                
+        
+        # Add new chat message to chat history in cache
+        chat_history.append({'user': text, 'bot': answer, 'find':find})
+        cache.set('chat_history', chat_history)
+
         data = {
             'ans':find,
             'len':len(find),
-            'answer':answer
+            'answer':answer,
+            'chat_history': chat_history
         }
 
         # Redirect to next view after confirming patient
@@ -81,13 +92,12 @@ class index(View):
             if temp != None:
                 url = f"/patient_chat/?uuid={temp}"
                 return redirect(url)
-
-    
         return render(request,'index.html',data)
 
 class patient_chat(View):
     # Putting uuid of patient to url to get everytime
     def get(self,request):
+        cache.delete('chat_history')
         p = "ok, what details do you want about patient"
         uuid = request.GET.get('uuid')
         return render(request,'chat.html',{'uuid':uuid,'p':p})
@@ -130,16 +140,6 @@ class patient_chat(View):
                         final_find = [f for f in find if f.date.timestamp() < datetime.today().timestamp()]
                     else:
                         final_find = find
-            
-                #  getattr(obj, field_name)
-
-
-            headers = []
-            if len(find) > 0:
-                for field in find[0]._meta.fields:
-                    headers.append(field.name)
-            
-
 
             #chat openai
             if len(y)!=0:
@@ -150,12 +150,18 @@ class patient_chat(View):
             else:
                 reply = chat.data_chatting(request,"other question")
 
+            # Retrieve chat history from cache
+            chat_history = cache.get('chat_history', [])
+            # Add new chat message to chat history in cache
+            chat_history.append({'user': prompt, 'bot': reply, 'find':final_find})
+            cache.set('chat_history', chat_history)
+
             dt = {
                 'find':final_find,
                 "y":y,
                 "len":len(find),
                 "reply":reply,
-                "headers":headers,
+                "chat_history":chat_history
                 }
         except:
             return redirect('/')
@@ -178,6 +184,10 @@ class All_data(View):
         
         heads = []
         headers = model._meta.get_fields()
+        headers = []
+        if len(find_data) > 0:
+            for field in find_data[0]._meta.fields:
+                headers.append(field.name)
         # for field in fields:
         #     field_name = field.name
         #     # now you can use the field name as an attribute of a model instance
