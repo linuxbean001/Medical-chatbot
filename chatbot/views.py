@@ -87,7 +87,7 @@ class index(View):
         # Redirect to next view after confirming patient
         yes_finder = finders.recognize_yes(text)
         if yes_finder == "yes":
-            uid = request.POST.get('h1_value')
+            uid = request.POST.get('myInput')
             temp = finders.UUID(uid)
             if temp != None:
                 url = f"/patient_chat/?uuid={temp}"
@@ -100,71 +100,80 @@ class patient_chat(View):
         cache.delete('chat_history')
         p = "ok, what details do you want about patient"
         uuid = request.GET.get('uuid')
-        return render(request,'chat.html',{'uuid':uuid,'p':p})
+        patient = patients.objects.filter(
+            Q(uuid =  uuid)
+        )
+        return render(request,'chat.html',{'uuid':uuid,'p':p,'patient':patient})
     def post(self,request):
-        try:
+        # try:
 
-            # Getting uuid and user input
-            uuid = request.GET.get('uuid')
-            prompt = request.POST.get('text')
+        # Getting uuid and user input
+        uuid = request.GET.get('uuid')
+        prompt = request.POST.get('text')
 
-            # to understan users sentences timings and confirming model
-            time = finders.determine_time_frame(prompt)
-            y = chat.find_model_names(prompt)
+        # to understan users sentences timings and confirming model
+        time = finders.determine_time_frame(prompt)
+        y = chat.find_model_names(prompt)
 
-            with_stop = ['allergy','careplan','condition','device','encounter','medication']
-            with_date = ['imaging_studies','immunization','observations','procedure']
-            find = []
-            final_find = []
-            
-            #Fetching filtered daa
-            for i in y:
-                model = apps.get_model('chatbot', i)
-                find_data = model.objects.filter(
-                        Q(patient =  f"['{uuid}']") | Q(patient =  uuid) 
-                    )
-                find.extend(find_data)
+        with_stop = ['allergy','careplan','condition','device','encounter','medication']
+        with_date = ['imaging_studies','immunization','observations','procedure']
+        find = []
+        final_find = []
 
-                #Filtering fetched data again 
-                if  i in with_stop:
-                    if time == 1 or time == 2:
-                        final_find = [f for f in find if f.stop==None]
-                    elif time == 0:
-                        final_find = [f for f in find if f.stop is not None]
-                    else:
-                        final_find = find
-                elif  i in with_date:
-                    if time == 1 or time == 2:
-                        final_find = [f for f in find if f.date.timestamp() >= datetime.today().timestamp()]
-                    elif time == 0:
-                        final_find = [f for f in find if f.date.timestamp() < datetime.today().timestamp()]
-                    else:
-                        final_find = find
+        #Patient data
+        patient = patients.objects.filter(
+            Q(uuid =  uuid)
+        )
+        
+        #Fetching filtered daa
+        for i in y:
+            model = apps.get_model('chatbot', i)
+            find_data = model.objects.filter(
+                    Q(patient =  f"['{uuid}']") | Q(patient =  uuid) 
+                )
+            find.extend(find_data)
 
-            #chat openai
-            if len(y)!=0:
-                if len(find)==0:
-                    reply = chat.data_chatting(request,f"{prompt}, No data found")
+            #Filtering fetched data again 
+            if  i in with_stop:
+                if time == 1 or time == 2:
+                    final_find = [f for f in find if f.stop==None]
+                elif time == 0:
+                    final_find = [f for f in find if f.stop is not None]
                 else:
-                    reply = chat.data_chatting(request,f"{prompt}, data found")
+                    final_find = find
+            elif  i in with_date:
+                if time == 1 or time == 2:
+                    final_find = [f for f in find if f.date.timestamp() >= datetime.today().timestamp()]
+                elif time == 0:
+                    final_find = [f for f in find if f.date.timestamp() < datetime.today().timestamp()]
+                else:
+                    final_find = find
+
+        #chat openai
+        if len(y)!=0:
+            if len(find)==0:
+                reply = chat.data_chatting(request,f"{prompt}, No data found")
             else:
-                reply = chat.data_chatting(request,"other question")
+                reply = chat.data_chatting(request,f"{prompt}, data found")
+        else:
+            reply = chat.data_chatting(request,"other question")
 
-            # Retrieve chat history from cache
-            chat_history = cache.get('chat_history', [])
-            # Add new chat message to chat history in cache
-            chat_history.append({'user': prompt, 'bot': reply, 'find':final_find})
-            cache.set('chat_history', chat_history)
+        # Retrieve chat history from cache
+        chat_history = cache.get('chat_history', [])
+        # Add new chat message to chat history in cache
+        chat_history.append({'user': prompt, 'bot': reply, 'find':final_find})
+        cache.set('chat_history', chat_history)
 
-            dt = {
-                'find':final_find,
-                "y":y,
-                "len":len(find),
-                "reply":reply,
-                "chat_history":chat_history
-                }
-        except:
-            return redirect('/')
+    
+
+        dt = {
+            'patient':patient,
+            'find':final_find,
+            "y":y,
+            "len":len(find),
+            "reply":reply,
+            "chat_history":chat_history
+            }
         return render(request,'chat.html',dt)
 
 
@@ -174,30 +183,29 @@ class All_data(View):
     def get(self,request):
         return render(request, 'table.html')
     def post(self,request):
-        uuid = 'fc817953-cc8b-45db-9c85-7c0ced8fa90d'
+        uuid = 'fca3178e-fb68-41c3-8598-702d3ca68b96'
         prompt = request.POST.get('text')
         y = chat.find_model_names(prompt)
         model = apps.get_model('chatbot', y[0])
         find_data = model.objects.filter(
                     Q(patient =  f"['{uuid}']") | Q(patient =  uuid) 
-                )
-        
-        heads = []
-        headers = model._meta.get_fields()
+                ).values()
+
+        fields = [field.name for field in model._meta.get_fields()]
+
         headers = []
-        if len(find_data) > 0:
-            for field in find_data[0]._meta.fields:
-                headers.append(field.name)
-        # for field in fields:
-        #     field_name = field.name
-        #     # now you can use the field name as an attribute of a model instance
-        #     obj1 = model.objects.first()
-        #     value = getattr(obj1, field_name)
+
+        for i in find_data:
+            temp = []
+            for k in fields:
+                temp.append(i[k])
+            headers.append(temp)
+
 
         dt = {
             'find':find_data,
             "y":y,
-            "headers":headers,
-            "heads":heads
+            "fields":fields,
+            "heads":headers
             }
         return render(request,'table.html',dt)
