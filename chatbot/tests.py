@@ -76,8 +76,8 @@ class chat:
         kpt.add_example(Example("Tell me about the patients observation ,No data found","Sorry I don't have any data about patients Observations"))
         kpt.add_example(Example("Tell me about the patients observation, data found","There are Patient Observations"))
         kpt.add_example(Example("any upcoming procedures, No data found","no there are not any upcoming procedures for the patient"))
-        kpt.add_example(Example("other question","Please click on Restart if you want to ask questions about other patient or context"))
-        kpt.add_example(Example("othe question","Click on restart to chat about new patient"))
+        kpt.add_example(Example("other question","Please unlock patient if you want to ask questions about other patient or context"))
+        kpt.add_example(Example("othe question","Click on unlock to chat about new patient"))
         p = kpt.submit_request(prompt)
     
         return p['choices'][0]['text'][8:]
