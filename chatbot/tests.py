@@ -3,6 +3,10 @@ from datetime import datetime
 import openai
 import re
 import nltk
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('maxent_ne_chunker')
+nltk.download('words')
 from nltk.corpus import wordnet
 from nltk import pos_tag, ne_chunk
 from nltk.tokenize import word_tokenize
