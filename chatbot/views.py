@@ -1,20 +1,23 @@
 from django.shortcuts import render,redirect
 from django.apps import apps
 from django.views import View
-from .models import patients,procedure
+from .models import patients
 import re
 from django.db.models import Q
 from .tests import finders,chat
-from .updater import data_update
-from datetime import datetime,date
+from datetime import datetime
 from django.core.cache import cache
+
+
 
 # Create your views here.
 
 
 # First upcoming View
+
 class index(View):
-    patt = ['\d{4}-\d\d-\d\d','\d{4}-\d-\d','\d{4}-\d-\d\d','\d{4}-\d\d-\d','\d{3}-\d\d-\d{4}','[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}',]
+    patt = ['\d{4}-\d\d-\d\d','\d{4}-\d-\d','\d{4}-\d-\d\d','\d{4}-\d\d-\d','\d{3}-\d\d-\d{4}','[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}']
+    normal = ['patient',"hii","hello","Hii","Hello","HII","HELLO"]
     def get(self,request):
         cache.delete('chat_history')
         return render(request,'index.html')
@@ -40,8 +43,15 @@ class index(View):
                 Q(ssn = SSN) | Q(birthdate = DOB) | Q(birthdate = DOB, ssn = SSN) | Q(uuid = UUID) |Q(first = First, last = Last) | Q(first = First) | Q(last = Last)
                 )
 
-        # Creating reply for user by openai
-        answer = chat.chatting(request,text)
+        # Redirect to next view after confirming patient
+        yes_finder = finders.recognize_yes(text)
+        if yes_finder == "yes":
+            uid = request.POST.get('myInput')
+            temp = finders.UUID(uid)
+            if temp != None:
+                url = f"/patient_chat/?uuid={temp}"
+                return redirect(url)
+        
 
         # Retrieve chat history from cache
         chat_history = cache.get('chat_history', [])
@@ -50,11 +60,15 @@ class index(View):
             answer = chat.chatting(request,f"{text}, more than one")
         elif len(find)==1:
             answer = chat.chatting(request,f"{text}, found one")
-        elif len(find)==0:
-            for word in index.patt:
-                    if re.search(word,text):
-                        answer = chat.chatting(request,f"{text}, no one found")
-                        break
+        else:
+            checker = [word for word in index.patt if re.search(word,text)]
+            ungeneral = [word for word in index.normal if re.search(word,text)]
+            if len(checker)>0:
+                answer = chat.chatting(request,f"{text}, no one found")
+            elif len(ungeneral)>0:
+                answer = chat.chatting(request,text)
+            else:
+                answer = chat.general_chat(text)
         
         # Add new chat message to chat history in cache
         chat_history.append({'user': text, 'bot': answer, 'find':find})
@@ -67,14 +81,7 @@ class index(View):
             'chat_history': chat_history
         }
 
-        # Redirect to next view after confirming patient
-        yes_finder = finders.recognize_yes(text)
-        if yes_finder == "yes":
-            uid = request.POST.get('myInput')
-            temp = finders.UUID(uid)
-            if temp != None:
-                url = f"/patient_chat/?uuid={temp}"
-                return redirect(url)
+        
         return render(request,'index.html',data)
 
 class patient_chat(View):
@@ -88,67 +95,78 @@ class patient_chat(View):
         )
         return render(request,'chat.html',{'uuid':uuid,'p':p,'patient':patient})
     def post(self,request):
-        try:
+        # try:
 
-            # Getting uuid and user input
-            uuid = request.GET.get('uuid')
-            prompt = request.POST.get('text')
+        # Getting uuid and user input
+        uuid = request.GET.get('uuid')
+        prompt = request.POST.get('text')
 
-            # to understan users sentences timings and confirming model
-            time = finders.determine_time_frame(prompt)
-            y = chat.find_model_names(prompt)
+        # to understan users sentences timings and confirming model
+        time = finders.determine_time_frame(prompt)
+        m = chat.find_model_names(prompt)
+        if len(m)>0:
+            y = m[0]
+        else:
+            y = None
 
-            with_stop = ['allergy','careplan','condition','device','encounter','medication']
-            with_date = ['imaging_studies','immunization','observations','procedure']
-            find = []
-            final_find = []
+        with_stop = ['allergy','careplan','condition','device','encounter','medication']
+        with_date = ['imaging_studies','immunization','observations','procedure']
+        find = []
+        final_find = []
 
-            #Patient data
-            patient = patients.objects.filter(
-                Q(uuid =  uuid)
-            )
-            
-            #Fetching filtered daa
-            for i in y:
-                model = apps.get_model('chatbot', i)
-                find_data = model.objects.filter(
-                        Q(patient =  f"['{uuid}']") | Q(patient =  uuid) 
-                    )
-                find.extend(find_data)
-
-                #Filtering fetched data again 
-                if  i in with_stop:
-                    if time == 1 or time == 2:
-                        final_find = [f for f in find if f.stop==None]
-                    elif time == 0:
-                        final_find = [f for f in find if f.stop is not None]
-                    else:
-                        final_find = find
-                elif  i in with_date:
-                    if time == 1 or time == 2:
-                        final_find = [f for f in find if f.date.timestamp() >= datetime.today().timestamp()]
-                    elif time == 0:
-                        final_find = [f for f in find if f.date.timestamp() < datetime.today().timestamp()]
-                    else:
-                        final_find = find
-
-            #chat openai
-            if len(y)!=0:
-                if len(find)==0:
-                    reply = chat.data_chatting(request,f"{prompt}, No data found")
-                else:
-                    reply = chat.data_chatting(request,f"{prompt}, data found")
-            else:
-                reply = chat.data_chatting(request,"other question")
-
-            # Retrieve chat history from cache
-            chat_history = cache.get('chat_history', [])
-            # Add new chat message to chat history in cache
-            chat_history.append({'user': prompt, 'bot': reply, 'find':final_find})
-            cache.set('chat_history', chat_history)
+        #Patient data
+        patient = patients.objects.filter(
+            Q(uuid =  uuid)
+        )
         
-        except:
-            return redirect('/')
+        #Fetching filtered daa
+        if y:
+            model = apps.get_model('chatbot', y)
+            find_data = model.objects.filter(
+                    Q(patient =  f"['{uuid}']") | Q(patient =  uuid) 
+                )
+            find.extend(find_data)
+
+        #Filtering fetched data again 
+        if  y in with_stop:
+            if time == 1 or time == 2:
+                final_find = [f for f in find if f.stop==None]
+            elif time == 0:
+                final_find = [f for f in find if f.stop is not None]
+            elif time == 3:
+                final_find = find
+            else:
+                final_find = find
+        elif  y in with_date:
+            if time == 1 or time == 2:
+                final_find = [f for f in find if f.date.timestamp() >= datetime.today().timestamp()]
+            elif time == 0:
+                final_find = [f for f in find if f.date.timestamp() < datetime.today().timestamp()]
+            elif time == 3:
+                final_find = find
+            else:
+                final_find = find
+        
+        else:
+            final_find = find
+
+        #chat openai
+        if y:
+            if len(final_find) > 0:
+                reply = chat.data_chatting(request, prompt)
+            else:
+                reply = chat.no_data_found(request, prompt)
+        else:
+            reply = chat.general_chat(prompt)
+
+        # Retrieve chat history from cache
+        chat_history = cache.get('chat_history', [])
+        # Add new chat message to chat history in cache
+        chat_history.append({'user': prompt, 'bot': reply, 'find':final_find})
+        cache.set('chat_history', chat_history)
+        
+        # except:
+        #     return redirect('/')
 
     
 
