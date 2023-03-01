@@ -19,21 +19,21 @@ class chat:
 
     model_map = {
         
-        'condition': ['condition', 'conditions', 'condit', 'illness', 'ailment', 'disease', 'disorder', 'affliction', 'prognosis', 'diagnosis', 'state of health', 'medical condition', 'physical condition', 'mental state', 'well-being', 'symptomatology', 'pathology', 'clinical status', 'vital signs', 'health status'],
+        'condition': ['condition', 'conditions', 'condit', 'illness', 'ailment', 'disease', 'disorder', 'affliction', 'prognosis', 'state of health', 'medical condition', 'physical condition', 'mental state', 'well-being', 'symptomatology', 'pathology', 'clinical status', 'health status'],
         'allergy': ['allergy', 'allergies', 'hypersensitivity', 'reaction', 'sensitivity', 'intolerance', 'aller', 'sensitivities', 'sensitive reaction', 'sensitive', 'overreaction', 'hyperactive immune response', 'sensitized response', 'allergic reaction', 'anaphylaxis'],
-        'medication': ['medication', 'medications', 'prescription', 'drug', 'medicine', 'pharmaceutical', 'remedy', 'treatment', 'treatment plan', 'pharmaceuticals', 'therapeutic agent', 'pharmacotherapy', 'meds', 'therapeutic treatment', 'medicinal', 'drug therapy', 'drug regimen', 'drug prescription'],
-        'careplan': ['careplan', 'careplans', 'plan', 'strategy', 'scheme', 'approach', 'course of action', 'care strategy', 'care approach', 'care regimen', 'care scheme', 'care management plan', 'treatment plan', 'therapeutic plan', 'therapeutic', 'patient care plan', 'care coordination plan', 'care'],
+        'medication': ['medication', 'medications', 'prescription', 'drug', 'medicine', 'pharmaceutical', 'remedy', 'pharmaceuticals', 'therapeutic agent', 'pharmacotherapy', 'meds', 'therapeutic', 'medicinal', 'drug therapy', 'drug regimen', 'drug prescription'],
+        'careplan': ['careplan', 'careplans', 'strategy', 'scheme', 'approach', 'course of action', 'care strategy', 'care approach', 'care regimen', 'care scheme', 'care management plan', 'therapeutic plan', 'therapeutic', 'patient care plan', 'care coordination plan', 'care'],
         'device': ['device', 'devices', 'apparatus', 'machine', 'gadget', 'instrument', 'equipment', 'medical device', 'medical equipment', 'surgical device', 'implant', 'prosthetic device', 'medical instrument', 'diagnostic device', 'monitoring device', 'therapeutic device', 'implanted device', 'medical appliance', 'medical apparatus', 'surgical equipment', 'implanted instrument', 'prosthetic implant', 'pacemaker', 'stent', 'catheter', 'shunt', 'prosthesis', 'orthotic', 'orthopedic implant', 'electronic implant'],
         'encounter': ['encounter', 'encounters', 'meeting', 'interaction', 'encounter', 'visit', 'appointment', 'consultation', 'examination', 'check-up'],
         'procedure': ['procedure', 'procedures', 'surgery', 'operation', 'procedure', 'technique', 'process', 'treatment', 'therapy', 'intervention', 'surger'],
         'imaging_studies': ['imaging_studies', 'scans', 'test', 'imaging', 'studies', 'examination', 'examinations', 'radiography', 'ultrasound', 'mammography', 'MRI', 'CT', 'PET', 'X-ray', 'angiography', 'fluoroscopy'],
         'immunization': ['immunization', 'immunizations', 'vaccination', 'injection', 'immunization', 'shot', 'jab', 'vaccine', 'dose', 'booster', 'adjuvant', 'antibody', 'herd immunity', 'immunoglobulin'],
-        'observations': ['observation','observe', 'notes', 'comments', 'observations', 'records', 'documentation', 'history', 'symptoms', 'diagnosis', 'treatment', 'medications', 'vital signs', 'lab results', 'patient progress'],
+        'observations': ['observation', 'observe', 'notes', 'comments', 'observations', 'records', 'documentation', 'symptoms', 'diagnosis' , 'vital', 'lab results', 'patient progress'],
         'organizations': ['organizations', 'companies', 'firms', 'organizations', 'agencies', 'institutions', 'hospitals', 'clinics', 'universities', 'research centers', 'non-profits', 'government agencies'],
         'supplies': ['supplies', 'goods', 'products', 'items', 'supplies', 'materials'],
         'payer_transitions': ['payer_transitions', 'transitions', 'shifts', 'changes', 'alterations'],
         'payers': ['payer', 'insurers', 'providers', 'payers', 'financiers', 'sponsors'],
-        'provider': ['provider', 'providers', 'doctor', 'physician', 'caregiver', 'practitioner', 'professional'],
+        'provider': ['provider', 'providers', 'doctor', 'physician', 'caregiver', 'practitioner', 'professional']
     }
 
 
