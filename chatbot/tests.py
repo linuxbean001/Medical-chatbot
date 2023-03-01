@@ -53,7 +53,7 @@ class chat:
 
         # model to generate the answer
         gpt = GPT(engine="davinci",
-                temperature=0.2,
+                temperature=0.5,
                 max_tokens=100)
 
 
@@ -66,6 +66,8 @@ class chat:
         gpt.add_example(Example('yes that was the patient','Please give his ssn no. again'))
         gpt.add_example(Example('6d048a56-edb8-4f29-891d-7a84d75a8e78, found one','please confirm if this is the patient you are talking about by saying yes'))
         gpt.add_example(Example('can you find the patient whose dob is 1914-09-05 and ssn is 999-72-8988, more than one','Which one are you talking about please confirm with ssn no.'))
+        gpt.add_example(Example("tell me about patient medications","Which patient"))
+
         p = gpt.submit_request(prompt)
     
         return p['choices'][0]['text'][8:]
@@ -77,15 +79,45 @@ class chat:
                 temperature=0.2,
                 max_tokens=100)
 
-        kpt.add_example(Example("Tell me about the patients medications, data found","This is The Data avaliable about patients Medication"))
-        kpt.add_example(Example("Tell me about the patients observation ,No data found","Sorry I don't have any data about patients Observations"))
-        kpt.add_example(Example("Tell me about the patients observation, data found","There are Patient Observations"))
-        kpt.add_example(Example("any upcoming procedures, No data found","no there are not any upcoming procedures for the patient"))
-        kpt.add_example(Example("other question","Please unlock patient if you want to ask questions about other patient or context"))
-        kpt.add_example(Example("othe question","Click on unlock to chat about new patient"))
+        kpt.add_example(Example("Tell me about the patients medications","This is The Data avaliable about patients Medication"))
+        kpt.add_example(Example("What is the patient's current diagnosis?","Currently these diagnosis are present in our database"))
+        kpt.add_example(Example("What lab results are available for the patient","These are the avaliable lab results of the patient"))
+        kpt.add_example(Example("Are there any known allergies for the patient?","Yes there are"))
         p = kpt.submit_request(prompt)
     
         return p['choices'][0]['text'][8:]
+    
+    def no_data_found(self,prompt):
+        openai.api_key = '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'
+        nft = GPT(engine="davinci",
+                temperature=0.2,
+                max_tokens=100)
+
+        nft.add_example(Example("Tell me about the patients medications","There is no data about patients medications"))
+        nft.add_example(Example("Tell me about the patients current medications","Patient is not taking any kind of medications currently"))
+        nft.add_example(Example("Tell me about the patients observation","Sorry I don't have any data about patients Observations"))
+        nft.add_example(Example("What is the patient's current diagnosis?","We don't have any current diagnosis but there may be some previous diagnosis"))
+        nft.add_example(Example("What lab results are available for the patient?","no there not any lab results of this patient"))
+        nft.add_example(Example("any upcoming procedures","No there are no upcoming procedures for the patient"))
+        nft.add_example(Example("is there any devices used on patient","No"))
+        nft.add_example(Example("What is the patient's current vital sign data","There are no vital signs currently But there may be previous"))
+        # nft.add_example(Example("other question","Please unlock patient if you want to ask questions about other patient or context"))
+        # nft.add_example(Example("othe question","Click on unlock to chat about new patient"))
+        p = nft.submit_request(prompt)
+    
+        return p['choices'][0]['text'][8:]
+    
+    def general_chat(crust):
+    # Use the OpenAI API to generate answers based on the PDF and the question
+        openai.api_key = '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'
+        prompt = (crust)
+        completions = openai.Completion.create(
+            engine="text-davinci-002",
+            prompt=prompt,
+            max_tokens=100,
+            temperature=0,
+        )
+        return completions["choices"][0]["text"]
 
 
 # All functions to find details from users sentences
@@ -196,6 +228,16 @@ class finders:
             if synonym in text:
                 return True
         return False
+
+
+
+
+
+
+
+
+
+
 
 
 
