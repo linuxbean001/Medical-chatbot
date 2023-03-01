@@ -66,7 +66,8 @@ class chat:
         gpt.add_example(Example('yes that was the patient','Please give his ssn no. again'))
         gpt.add_example(Example('6d048a56-edb8-4f29-891d-7a84d75a8e78, found one','please confirm if this is the patient you are talking about by saying yes'))
         gpt.add_example(Example('can you find the patient whose dob is 1914-09-05 and ssn is 999-72-8988, more than one','Which one are you talking about please confirm with ssn no.'))
-        gpt.add_example(Example("tell me about patient medications","Which patient"))
+        gpt.add_example(Example("tell me about patient","Which patient"))
+        gpt.add_example(Example("let's talk about patient with ssn no. 999-55-1100","Is this the Patient please confirm by saying yes"))
 
         p = gpt.submit_request(prompt)
     
